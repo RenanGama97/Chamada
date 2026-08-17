@@ -4,7 +4,10 @@
  * - recebe o push enviado pelo servidor
  */
 
-const VERSAO = 'igreja-aberta-v1';
+// IMPORTANTE: mude este número sempre que alterar algum arquivo do app.
+// É ele que faz os celulares baixarem a versão nova em vez de usar a cópia
+// guardada no aparelho.
+const VERSAO = 'igreja-aberta-v2';
 const ARQUIVOS = [
   './',
   './index.html',

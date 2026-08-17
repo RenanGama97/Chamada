@@ -49,6 +49,10 @@ python3 -m http.server 8000
 # abra http://localhost:8000
 ```
 
+> **Ao mexer no código:** troque o número de `VERSAO` em `sw.js`
+> (`igreja-aberta-v2` → `v3`, e assim por diante). É o que faz os celulares
+> baixarem a versão nova em vez de continuar usando a cópia guardada.
+
 ## 3. Modo local x modo nuvem
 
 O app começa no **modo local**: tudo fica salvo no próprio celular. Serve para
