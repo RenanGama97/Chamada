@@ -241,7 +241,9 @@ const atualizacao = {
     });
 
     try {
-      this.registro = await navigator.serviceWorker.register('sw.js');
+      this.registro = await navigator.serviceWorker.register('sw.js', {
+        updateViaCache: 'none',
+      });
     } catch (erro) {
       console.warn('Service worker não registrado:', erro);
       return;

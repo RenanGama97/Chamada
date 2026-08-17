@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.1.0';
+export const VERSAO = '1.1.1';
 
 export const NOVIDADES = [
+  {
+    versao: '1.1.1',
+    data: '2026-08-17',
+    itens: [
+      'Correção: quem estava numa versão antiga do app não recebia a atualização. Agora a troca acontece sozinha.',
+    ],
+  },
   {
     versao: '1.1.0',
     data: '2026-08-17',

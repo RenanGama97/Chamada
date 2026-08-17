@@ -7,7 +7,7 @@
 // IMPORTANTE: este número precisa ser igual ao VERSAO de js/versao.js.
 // É ele que faz os celulares perceberem que existe versão nova, baixarem os
 // arquivos e mostrarem a barra "Atualizar".
-const VERSAO = '1.1.0';
+const VERSAO = '1.1.1';
 const CACHE = `igreja-aberta-${VERSAO}`;
 const ARQUIVOS = [
   './',
@@ -36,9 +36,23 @@ const ARQUIVOS = [
 ];
 
 self.addEventListener('install', (evento) => {
-  // Sem skipWaiting: a versão nova fica "esperando" e o app mostra a barra
-  // de atualização. Quem decide a hora de trocar é o irmão.
-  evento.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ARQUIVOS)));
+  evento.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await cache.addAll(ARQUIVOS);
+
+      // Normalmente a versão nova fica "esperando" e o app mostra a barra
+      // "Atualizar" — quem decide a hora da troca é o irmão.
+      //
+      // Exceção: os caches com o nome antigo ("igreja-aberta-v1" e "-v2") são
+      // de versões do app que ainda não sabiam mostrar essa barra. Se
+      // esperássemos por elas, o celular ficaria preso na versão velha para
+      // sempre. Nesse caso assumimos na hora.
+      const chaves = await caches.keys();
+      const versaoSemAviso = chaves.some((c) => /^igreja-aberta-v\d+$/.test(c));
+      if (versaoSemAviso) await self.skipWaiting();
+    })(),
+  );
 });
 
 // A tela pede a troca quando o botão "Atualizar" é tocado.
