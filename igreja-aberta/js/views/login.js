@@ -2,6 +2,7 @@
 // de confiança. Quem entra primeiro vira administrador do grupo.
 
 import { CONFIG } from '../config.js';
+import { MARCA_SVG } from '../marca.js';
 import {
   chaveNome,
   emailValido,
@@ -16,8 +17,9 @@ export function render({ db }) {
 
   return `
     <section class="cartao" style="text-align:center">
-      <div style="font-size:42px">🔑</div>
-      <h2 style="margin-bottom:6px">${escapar(CONFIG.nomeGrupo)}</h2>
+      <div class="marca-login">${MARCA_SVG}</div>
+      <h2 style="margin-bottom:2px">${escapar(CONFIG.nomeGrupo)}</h2>
+      <p class="mini" style="letter-spacing:0.18em;margin-bottom:8px">IECC</p>
       <p class="fraco">Escala dos irmãos que abrem a igreja.</p>
     </section>
 

@@ -4,10 +4,11 @@
  * - recebe o push enviado pelo servidor
  */
 
-// IMPORTANTE: mude este número sempre que alterar algum arquivo do app.
-// É ele que faz os celulares baixarem a versão nova em vez de usar a cópia
-// guardada no aparelho.
-const VERSAO = 'igreja-aberta-v2';
+// IMPORTANTE: este número precisa ser igual ao VERSAO de js/versao.js.
+// É ele que faz os celulares perceberem que existe versão nova, baixarem os
+// arquivos e mostrarem a barra "Atualizar".
+const VERSAO = '1.1.0';
+const CACHE = `igreja-aberta-${VERSAO}`;
 const ARQUIVOS = [
   './',
   './index.html',
@@ -18,6 +19,8 @@ const ARQUIVOS = [
   './js/store.js',
   './js/util.js',
   './js/idb.js',
+  './js/versao.js',
+  './js/marca.js',
   './js/scheduler.js',
   './js/share.js',
   './js/notifications.js',
@@ -33,12 +36,14 @@ const ARQUIVOS = [
 ];
 
 self.addEventListener('install', (evento) => {
-  evento.waitUntil(
-    caches
-      .open(VERSAO)
-      .then((cache) => cache.addAll(ARQUIVOS))
-      .then(() => self.skipWaiting()),
-  );
+  // Sem skipWaiting: a versão nova fica "esperando" e o app mostra a barra
+  // de atualização. Quem decide a hora de trocar é o irmão.
+  evento.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ARQUIVOS)));
+});
+
+// A tela pede a troca quando o botão "Atualizar" é tocado.
+self.addEventListener('message', (evento) => {
+  if (evento.data?.tipo === 'ATUALIZAR') self.skipWaiting();
 });
 
 self.addEventListener('activate', (evento) => {
@@ -46,7 +51,7 @@ self.addEventListener('activate', (evento) => {
     caches
       .keys()
       .then((chaves) =>
-        Promise.all(chaves.filter((c) => c !== VERSAO).map((c) => caches.delete(c))),
+        Promise.all(chaves.filter((c) => c !== CACHE).map((c) => caches.delete(c))),
       )
       .then(() => self.clients.claim()),
   );
@@ -66,7 +71,7 @@ self.addEventListener('fetch', (evento) => {
         .then((resposta) => {
           if (resposta.ok) {
             const copia = resposta.clone();
-            caches.open(VERSAO).then((cache) => cache.put(pedido, copia));
+            caches.open(CACHE).then((cache) => cache.put(pedido, copia));
           }
           return resposta;
         })

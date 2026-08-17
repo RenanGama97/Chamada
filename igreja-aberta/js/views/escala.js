@@ -200,7 +200,7 @@ function cartaoMeuTurno(eu) {
     <div class="cartao cartao--destaque">
       <div class="cartao__titulo">
         <span>🔑 Seu próximo turno</span>
-        <span class="selo ${dias <= 1 ? 'selo--ambar' : 'selo--azul'}">${escapar(quando)}</span>
+        <span class="selo ${dias <= 1 ? 'selo--ambar' : 'selo--marca'}">${escapar(quando)}</span>
       </div>
       <p style="margin:6px 0 2px;font-size:17px;font-weight:700">
         ${escapar(DIAS_SEMANA[paraData(proximo.data).getDay()])}, ${formatarData(proximo.data)}

@@ -4,6 +4,7 @@ import { CONFIG } from './config.js';
 import { db } from './store.js';
 import { notificacoes } from './notifications.js';
 import { escapar, iniciais } from './util.js';
+import { NOVIDADES, VERSAO, comparaVersao, novidadesDaVersao } from './versao.js';
 
 import * as telaLogin from './views/login.js';
 import * as telaEscala from './views/escala.js';
@@ -22,8 +23,12 @@ const TELAS = {
 
 const SOMENTE_ADMIN = new Set(['irmaos', 'gerar']);
 
+const CHAVE_VERSAO_VISTA = 'igreja-aberta:versao-vista';
+
 const el = {
-  carregando: document.getElementById('carregando'),
+  abertura: document.getElementById('abertura'),
+  barraAtualizacao: document.getElementById('barraAtualizacao'),
+  botaoAtualizar: document.getElementById('botaoAtualizar'),
   cabecalho: document.getElementById('cabecalho'),
   titulo: document.getElementById('tituloTela'),
   botaoPerfil: document.getElementById('botaoPerfil'),
@@ -217,11 +222,129 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+/* ---------- atualização automática ---------- */
+
+// Fluxo: o service worker novo é baixado em segundo plano e fica "esperando".
+// Aí mostramos a barra; ao tocar em "Atualizar", mandamos ele assumir o lugar
+// do antigo e recarregamos a tela já na versão nova.
+const atualizacao = {
+  registro: null,
+  recarregando: false,
+
+  async preparar() {
+    if (!('serviceWorker' in navigator)) return;
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (this.recarregando) return;
+      this.recarregando = true;
+      location.reload();
+    });
+
+    try {
+      this.registro = await navigator.serviceWorker.register('sw.js');
+    } catch (erro) {
+      console.warn('Service worker não registrado:', erro);
+      return;
+    }
+
+    // Já havia uma versão nova esperando de uma visita anterior.
+    if (this.registro.waiting && navigator.serviceWorker.controller) {
+      this.mostrarBarra();
+    }
+
+    this.registro.addEventListener('updatefound', () => {
+      const novo = this.registro.installing;
+      if (!novo) return;
+      novo.addEventListener('statechange', () => {
+        // Sem controller é a primeira instalação: não há o que "atualizar".
+        if (novo.state === 'installed' && navigator.serviceWorker.controller) {
+          this.mostrarBarra();
+        }
+      });
+    });
+
+    // Procura versão nova ao abrir e de hora em hora, se o app ficar aberto.
+    this.procurar();
+    setInterval(() => this.procurar(), 60 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.procurar();
+    });
+  },
+
+  procurar() {
+    this.registro?.update().catch(() => {});
+  },
+
+  mostrarBarra() {
+    el.barraAtualizacao.classList.remove('oculto');
+    document.body.classList.add('tem-atualizacao');
+  },
+
+  aplicar() {
+    const esperando = this.registro?.waiting;
+    el.botaoAtualizar.disabled = true;
+    el.botaoAtualizar.textContent = 'Atualizando…';
+
+    if (esperando) {
+      esperando.postMessage({ tipo: 'ATUALIZAR' });
+      // Se por algum motivo o controllerchange não vier, recarrega assim mesmo.
+      setTimeout(() => {
+        if (!this.recarregando) location.reload();
+      }, 2500);
+    } else {
+      location.reload();
+    }
+  },
+};
+
+el.botaoAtualizar.addEventListener('click', () => atualizacao.aplicar());
+
+// Depois de atualizar, conta o que mudou.
+function mostrarNovidades() {
+  const vista = localStorage.getItem(CHAVE_VERSAO_VISTA);
+  localStorage.setItem(CHAVE_VERSAO_VISTA, VERSAO);
+
+  // Primeira vez no aparelho: não enche o irmão de novidades sem contexto.
+  if (!vista || vista === VERSAO) return;
+
+  const novas = NOVIDADES.filter((n) => comparaVersao(n.versao, vista) > 0);
+  const lista = novas.length ? novas : [novidadesDaVersao()].filter(Boolean);
+  if (!lista.length) return;
+
+  app.abrirModal({
+    titulo: '✨ O que há de novo',
+    html: `
+      <p class="versao-etiqueta">versão ${escapar(VERSAO)}</p>
+      ${lista
+        .map(
+          (n) => `
+            <p class="mini" style="margin:12px 0 6px">Versão ${escapar(n.versao)}</p>
+            <ul class="novidades">
+              ${n.itens.map((i) => `<li>${escapar(i)}</li>`).join('')}
+            </ul>`,
+        )
+        .join('')}
+      <button class="botao botao--principal botao--bloco" data-acao="ok" type="button" style="margin-top:16px">
+        Entendi
+      </button>
+    `,
+    montar: (raiz) => {
+      raiz.querySelector('[data-acao="ok"]').onclick = () => app.fecharModal();
+    },
+  });
+}
+
 /* ---------- inicialização ---------- */
+
+function esconderAbertura() {
+  el.abertura.classList.add('abertura--saindo');
+  setTimeout(() => el.abertura.remove(), 500);
+}
 
 async function iniciar() {
   document.title = `${CONFIG.nomeGrupo} — Escala`;
-  document.querySelector('.cabecalho__olho').textContent = CONFIG.nomeGrupo;
+
+  const abertoEm = Date.now();
 
   try {
     await db.iniciar();
@@ -235,16 +358,16 @@ async function iniciar() {
   // Se o cadastro foi apagado na nuvem, derruba a sessão deste aparelho.
   if (sessao && !app.eu) db.encerrarSessao();
 
-  el.carregando.classList.add('oculto');
   app.ir(location.hash.replace('#', '') || 'escala', { comHistorico: false });
 
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('sw.js');
-    } catch (erro) {
-      console.warn('Service worker não registrado:', erro);
-    }
-  }
+  // Deixa a marca aparecer por um instante, mesmo quando tudo carrega rápido.
+  const restante = Math.max(0, 1100 - (Date.now() - abertoEm));
+  setTimeout(() => {
+    esconderAbertura();
+    mostrarNovidades();
+  }, restante);
+
+  await atualizacao.preparar();
 
   if (app.eu) {
     await notificacoes.sincronizarLembretes(app.eu.id);
