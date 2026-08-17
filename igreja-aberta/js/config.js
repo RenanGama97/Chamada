@@ -13,8 +13,10 @@ export const CONFIG = {
 
   // Sincronização na nuvem (opcional)
   supabase: {
-    url: '', // ex.: 'https://xxxxxxxx.supabase.co'
-    anonKey: '', // chave "anon public" do projeto
+    url: 'https://pexgvmgqlagwptagfkab.supabase.co',
+    // Chave pública do projeto ("anon public" ou "publishable").
+    // Ela é pública de propósito: fica visível para quem abrir o app.
+    anonKey: 'sb_publishable_xlP7ONIeqrAocfDfT9Ntwg_VnzVP22T',
   },
 
   // Notificação push (opcional, exige o Supabase configurado)

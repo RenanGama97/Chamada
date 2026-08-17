@@ -145,10 +145,12 @@ class RepositorioNuvem {
   }
 
   async requisicao(caminho, { metodo = 'GET', corpo, prefer } = {}) {
-    const cabecalhos = {
-      apikey: this.anonKey,
-      Authorization: `Bearer ${this.anonKey}`,
-    };
+    const cabecalhos = { apikey: this.anonKey };
+    // As chaves antigas ("anon") são JWT e vão também no Authorization.
+    // As novas ("sb_publishable_...") só valem no cabeçalho apikey.
+    if (this.anonKey.startsWith('ey')) {
+      cabecalhos.Authorization = `Bearer ${this.anonKey}`;
+    }
     if (corpo) cabecalhos['Content-Type'] = 'application/json';
     if (prefer) cabecalhos.Prefer = prefer;
 
