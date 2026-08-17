@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Igreja Aberta — Escala</title>
+    <meta name="description" content="Escala automática dos irmãos que abrem a igreja." />
+    <meta name="theme-color" content="#1d4ed8" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Igreja Aberta" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div id="carregando" class="carregando">
+      <div class="carregando__marca">🔑</div>
+      <p>Carregando…</p>
+    </div>
+
+    <header id="cabecalho" class="cabecalho oculto">
+      <div class="cabecalho__topo">
+        <div>
+          <p class="cabecalho__olho">Igreja Aberta</p>
+          <h1 id="tituloTela" class="cabecalho__titulo">Escala</h1>
+        </div>
+        <button id="botaoPerfil" class="avatar" type="button" title="Meu perfil">?</button>
+      </div>
+      <div id="faixaAviso" class="faixa oculto"></div>
+    </header>
+
+    <main id="view" class="view"></main>
+
+    <nav id="navegacao" class="nav oculto">
+      <button class="nav__item" data-rota="escala" type="button">
+        <span class="nav__icone">🗓️</span><span>Escala</span>
+      </button>
+      <button class="nav__item" data-rota="disponibilidade" type="button">
+        <span class="nav__icone">🚫</span><span>Não posso</span>
+      </button>
+      <button class="nav__item somente-admin" data-rota="gerar" type="button">
+        <span class="nav__icone">✨</span><span>Gerar</span>
+      </button>
+      <button class="nav__item somente-admin" data-rota="irmaos" type="button">
+        <span class="nav__icone">👥</span><span>Irmãos</span>
+      </button>
+      <button class="nav__item" data-rota="ajustes" type="button">
+        <span class="nav__icone">⚙️</span><span>Ajustes</span>
+      </button>
+    </nav>
+
+    <div id="avisos" class="avisos" aria-live="polite"></div>
+    <div id="modal" class="modal oculto"><div id="modalCaixa" class="modal__caixa"></div></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
