@@ -7,7 +7,7 @@
 // IMPORTANTE: este número precisa ser igual ao VERSAO de js/versao.js.
 // É ele que faz os celulares perceberem que existe versão nova, baixarem os
 // arquivos e mostrarem a barra "Atualizar".
-const VERSAO = '1.1.1';
+const VERSAO = '1.2.0';
 const CACHE = `igreja-aberta-${VERSAO}`;
 const ARQUIVOS = [
   './',
@@ -31,6 +31,9 @@ const ARQUIVOS = [
   './js/views/irmaos.js',
   './js/views/gerar.js',
   './js/views/ajustes.js',
+  './fontes/poppins-300.woff2',
+  './fontes/poppins-400.woff2',
+  './fontes/poppins-600.woff2',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];

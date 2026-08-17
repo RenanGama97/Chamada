@@ -203,6 +203,7 @@ igreja-aberta/
 ├── manifest.webmanifest    dados de instalação (nome, ícone, cor)
 ├── sw.js                   service worker: offline, lembrete e push
 ├── css/app.css
+├── fontes/                 Poppins (licença SIL OFL), a fonte da logo
 ├── icons/                  ícones do celular + a logo (logo.svg, marca.svg)
 ├── js/
 │   ├── config.js           👈 onde você configura Supabase e VAPID
