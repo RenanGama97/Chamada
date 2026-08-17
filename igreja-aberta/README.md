@@ -22,6 +22,7 @@ Cultos já configurados: **domingo pela manhã**, **domingo pela noite** e
 | WhatsApp | Botão que abre o WhatsApp com o texto da escala já formatado. |
 | Lembrete | Notificação no celular no dia do turno (e um dia antes). |
 | Offline | Depois de abrir uma vez, o app abre sem internet. |
+| Atualização | Sai versão nova → aparece "Atualizar" → o app reinicia e conta o que mudou. |
 
 ## 2. Como colocar no ar (GitHub Pages)
 
@@ -49,9 +50,24 @@ python3 -m http.server 8000
 # abra http://localhost:8000
 ```
 
-> **Ao mexer no código:** troque o número de `VERSAO` em `sw.js`
-> (`igreja-aberta-v2` → `v3`, e assim por diante). É o que faz os celulares
-> baixarem a versão nova em vez de continuar usando a cópia guardada.
+## 2.1 Publicando uma versão nova
+
+Os celulares se atualizam sozinhos, mas só percebem a versão nova se o número
+mudar. A cada alteração no app:
+
+1. Aumente `VERSAO` em [`js/versao.js`](js/versao.js) (ex.: `1.1.0` → `1.2.0`).
+2. Escreva no topo de `NOVIDADES`, no mesmo arquivo, o que mudou — em português
+   simples, porque é isso que os irmãos vão ler no celular.
+3. Coloque **o mesmo número** em `VERSAO` no [`sw.js`](sw.js).
+4. Publique (push na `main`).
+
+Do lado de quem usa: ao abrir o app, aparece a barra **"Nova versão
+disponível"**. Tocando em *Atualizar*, o app reinicia sozinho e mostra a tela
+com o que mudou. Também dá para forçar a busca em **Ajustes → Procurar
+atualização**.
+
+> Se você esquecer o passo 3, os celulares continuam com a versão antiga
+> guardada — é o `sw.js` que dispara a atualização.
 
 ## 3. Modo local x modo nuvem
 
@@ -187,10 +203,12 @@ igreja-aberta/
 ├── manifest.webmanifest    dados de instalação (nome, ícone, cor)
 ├── sw.js                   service worker: offline, lembrete e push
 ├── css/app.css
-├── icons/
+├── icons/                  ícones do celular + a logo (logo.svg, marca.svg)
 ├── js/
 │   ├── config.js           👈 onde você configura Supabase e VAPID
-│   ├── app.js              navegação, sessão, avisos
+│   ├── versao.js           👈 número da versão e lista de novidades
+│   ├── app.js              navegação, sessão, avisos, atualização
+│   ├── marca.js            a logo em SVG, para usar nas telas
 │   ├── store.js            banco de dados (local ou nuvem)
 │   ├── scheduler.js         geração da escala
 │   ├── share.js            texto do WhatsApp

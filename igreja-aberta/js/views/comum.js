@@ -38,7 +38,7 @@ export function renderizarDias(itens, { euId, editavel = false } = {}) {
           <header class="dia__topo">
             <span>${escapar(diaSemana)}</span>
             <span class="dia__data">${formatarData(data)}</span>
-            ${ehHoje ? '<span class="selo selo--azul">hoje</span>' : ''}
+            ${ehHoje ? '<span class="selo selo--marca">hoje</span>' : ''}
           </header>
           ${itensDoDia.map((item) => linhaTurno(item, { euId, editavel, passado })).join('')}
         </article>
@@ -67,7 +67,7 @@ function linhaTurno(item, { euId, editavel, passado }) {
         </div>
         <div class="turno__nome">
           ${vago ? '<span class="selo selo--ambar">a definir</span>' : escapar(nomes.join(' e '))}
-          ${souEu ? '<span class="selo selo--azul">você</span>' : ''}
+          ${souEu ? '<span class="selo selo--marca">você</span>' : ''}
         </div>
         ${item.observacao ? `<div class="mini">📝 ${escapar(item.observacao)}</div>` : ''}
       </div>

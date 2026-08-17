@@ -4,6 +4,7 @@
 import { CONFIG } from '../config.js';
 import { db } from '../store.js';
 import { notificacoes, proximoTurnoTexto } from '../notifications.js';
+import { NOVIDADES, VERSAO } from '../versao.js';
 import {
   emailValido,
   escapar,
@@ -169,9 +170,24 @@ export function render({ app, eu }) {
     </div>
 
     <div class="cartao">
+      <div class="cartao__titulo">
+        <span>ℹ️ Sobre o app</span>
+        <span class="versao-etiqueta">versão ${escapar(VERSAO)}</span>
+      </div>
+      <p class="fraco" style="margin:0 0 10px">
+        As atualizações chegam sozinhas: quando sair uma versão nova, aparece o
+        aviso "Atualizar" na tela.
+      </p>
+      <div class="linha-botoes">
+        <button class="botao" data-acao="novidades" type="button">O que há de novo</button>
+        <button class="botao" data-acao="procurar-atualizacao" type="button">Procurar atualização</button>
+      </div>
+    </div>
+
+    <div class="cartao">
       <button class="botao botao--perigo botao--bloco" data-acao="sair" type="button">Sair deste aparelho</button>
       <p class="mini" style="margin:10px 0 0;text-align:center">
-        ${escapar(CONFIG.nomeGrupo)} · versão 1.0
+        ${escapar(CONFIG.nomeGrupo)} · IECC
       </p>
     </div>
   `;
@@ -300,6 +316,37 @@ export function montar(raiz, { app, eu }) {
     };
     entrada.click();
   });
+
+  raiz.querySelector('[data-acao="novidades"]').onclick = () => {
+    app.abrirModal({
+      titulo: '✨ O que há de novo',
+      html: `
+        ${NOVIDADES.map(
+          (n) => `
+            <p class="mini" style="margin:12px 0 6px">Versão ${escapar(n.versao)}</p>
+            <ul class="novidades">
+              ${n.itens.map((i) => `<li>${escapar(i)}</li>`).join('')}
+            </ul>`,
+        ).join('')}
+        <button class="botao botao--principal botao--bloco" data-acao="ok" type="button" style="margin-top:16px">
+          Fechar
+        </button>
+      `,
+      montar: (caixa) => {
+        caixa.querySelector('[data-acao="ok"]').onclick = () => app.fecharModal();
+      },
+    });
+  };
+
+  raiz.querySelector('[data-acao="procurar-atualizacao"]').onclick = async () => {
+    const registro = await navigator.serviceWorker?.getRegistration();
+    if (!registro) return app.aviso('Este navegador não guarda o app offline.', 'erro');
+    await registro.update().catch(() => {});
+    setTimeout(() => {
+      if (registro.waiting) app.aviso('Versão nova encontrada! Toque em "Atualizar".', 'ok');
+      else app.aviso('Você já está na versão mais recente.', 'ok');
+    }, 1200);
+  };
 
   raiz.querySelector('[data-acao="sair"]').onclick = async () => {
     const ok = await app.confirmar('Sair do app neste aparelho?', { textoOk: 'Sair' });

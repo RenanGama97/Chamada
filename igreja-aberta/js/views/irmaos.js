@@ -45,7 +45,7 @@ export function render({ eu }) {
                     <div class="pessoa__info">
                       <div class="pessoa__nome">
                         ${escapar(m.nome)}
-                        ${m.id === eu.id ? '<span class="selo selo--azul">você</span>' : ''}
+                        ${m.id === eu.id ? '<span class="selo selo--marca">você</span>' : ''}
                         ${m.admin ? '<span class="selo selo--verde">adm</span>' : ''}
                         ${m.ativo ? '' : '<span class="selo">de licença</span>'}
                       </div>
