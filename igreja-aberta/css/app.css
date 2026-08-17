@@ -1,5 +1,32 @@
 /* Igreja Aberta — estilos. Feito para celular primeiro. */
 
+/* Poppins: a mesma família geométrica da logo da IECC.
+   Os arquivos ficam em fontes/ (licença SIL Open Font, ver LICENSE-Poppins.txt)
+   e são guardados junto com o app, para funcionar sem internet. */
+@font-face {
+  font-family: Poppins;
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../fontes/poppins-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: Poppins;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fontes/poppins-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: Poppins;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fontes/poppins-600.woff2') format('woff2');
+}
+
 /* Paleta tirada da logo da IECC: areia, creme e traço branco. */
 :root {
   --areia: #c4b09b; /* fundo da logo */
@@ -56,7 +83,7 @@ body {
 body {
   background: var(--fundo);
   color: var(--texto);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -633,7 +660,7 @@ textarea:focus {
 }
 
 .abertura__marca {
-  width: min(70vw, 300px);
+  width: min(72vw, 310px);
   animation: surgir 0.7s ease-out both;
 }
 

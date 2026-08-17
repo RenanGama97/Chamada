@@ -9,9 +9,17 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.1.1';
+export const VERSAO = '1.2.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.2.0',
+    data: '2026-08-17',
+    itens: [
+      'A logo da tela de abertura ficou igual à da igreja: o mesmo desenho e a mesma fonte.',
+      'O app inteiro passou a usar a fonte da identidade da IECC.',
+    ],
+  },
   {
     versao: '1.1.1',
     data: '2026-08-17',
