@@ -6,10 +6,12 @@ import { db } from '../store.js';
 import { notificacoes, proximoTurnoTexto } from '../notifications.js';
 import { NOVIDADES, VERSAO } from '../versao.js';
 import {
+  DIAS_SEMANA,
   emailValido,
   escapar,
   formatarTelefone,
   normalizarTelefone,
+  uid,
 } from '../util.js';
 
 export const titulo = 'Ajustes';
@@ -104,41 +106,81 @@ export function render({ app, eu }) {
       </p>
     </div>
 
-    ${
-      app.ehAdmin
-        ? `<div class="cartao">
-            <div class="cartao__titulo">⏰ Horários dos cultos</div>
-            ${tipos
-              .map(
-                ([chave, t]) => `
-                  <div style="border-top:1px solid var(--borda);padding-top:10px;margin-top:10px">
-                    <label class="escolha">
-                      <input type="checkbox" data-tipo-ativo="${escapar(chave)}" ${t.ativo !== false ? 'checked' : ''} />
-                      <strong>${escapar(t.label)}</strong>
-                    </label>
-                    <div class="grade-2">
-                      <div class="campo">
-                        <label for="culto_${escapar(chave)}">Início do culto</label>
-                        <input type="time" id="culto_${escapar(chave)}" data-hora-culto="${escapar(chave)}" value="${escapar(t.horaCulto || '')}" />
-                      </div>
-                      <div class="campo">
-                        <label for="abrir_${escapar(chave)}">Chegar para abrir</label>
-                        <input type="time" id="abrir_${escapar(chave)}" data-hora-abertura="${escapar(chave)}" value="${escapar(t.horaAbertura || '')}" />
-                      </div>
-                    </div>
-                  </div>`,
-              )
-              .join('')}
-            <div class="campo" style="margin-top:12px">
+    <div class="cartao">
+      <div class="cartao__titulo">⏰ Horários dos cultos</div>
+      ${
+        !app.ehAdmin
+          ? '<p class="fraco" style="margin:0 0 10px">Só administradores podem alterar. Aqui você só confere os horários.</p>'
+          : ''
+      }
+      ${tipos
+        .map(
+          ([chave, t]) => `
+            <div style="border-top:1px solid var(--borda);padding-top:10px;margin-top:10px">
+              <label class="escolha">
+                <input type="checkbox" data-tipo-ativo="${escapar(chave)}" ${t.ativo !== false ? 'checked' : ''} ${app.ehAdmin ? '' : 'disabled'} />
+                <strong>${escapar(t.label)}</strong>
+              </label>
+              <div class="grade-2">
+                <div class="campo">
+                  <label for="culto_${escapar(chave)}">Início do culto</label>
+                  <input type="time" id="culto_${escapar(chave)}" data-hora-culto="${escapar(chave)}" value="${escapar(t.horaCulto || '')}" ${app.ehAdmin ? '' : 'disabled'} />
+                </div>
+                <div class="campo">
+                  <label for="abrir_${escapar(chave)}">Chegar para abrir</label>
+                  <input type="time" id="abrir_${escapar(chave)}" data-hora-abertura="${escapar(chave)}" value="${escapar(t.horaAbertura || '')}" ${app.ehAdmin ? '' : 'disabled'} />
+                </div>
+              </div>
+              ${
+                app.ehAdmin && t.personalizado
+                  ? `<button class="botao botao--pequeno botao--perigo" data-remover-tipo="${escapar(chave)}" type="button">Remover este evento</button>`
+                  : ''
+              }
+            </div>`,
+        )
+        .join('')}
+      ${
+        app.ehAdmin
+          ? `<div class="campo" style="margin-top:12px">
               <label for="aPessoas">Irmãos por culto (padrão)</label>
               <input type="number" id="aPessoas" min="1" max="5" value="${prefs.pessoasPorEvento || 1}" />
             </div>
             <button class="botao botao--principal botao--bloco" data-acao="salvar-prefs" type="button">
               Salvar horários
             </button>
-          </div>`
-        : ''
-    }
+
+            <div style="border-top:1px solid var(--borda);padding-top:12px;margin-top:16px">
+              <div class="secao-titulo" style="margin:0 0 8px">➕ Adicionar outro tipo de evento</div>
+              <p class="fraco" style="margin:0 0 10px">
+                Para eventos avulsos, como Culto das Mulheres ou Culto Phronesis.
+              </p>
+              <div class="campo">
+                <label for="novoEventoNome">Nome do evento</label>
+                <input type="text" id="novoEventoNome" maxlength="40" placeholder="Ex.: Culto das Mulheres" />
+              </div>
+              <div class="campo">
+                <label for="novoEventoDia">Dia da semana</label>
+                <select id="novoEventoDia">
+                  ${DIAS_SEMANA.map((d, i) => `<option value="${i}">${escapar(d)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="grade-2">
+                <div class="campo">
+                  <label for="novoEventoHora">Horário de início</label>
+                  <input type="time" id="novoEventoHora" value="19:30" />
+                </div>
+                <div class="campo">
+                  <label for="novoEventoAbertura">Chegar para abrir</label>
+                  <input type="time" id="novoEventoAbertura" value="19:00" />
+                </div>
+              </div>
+              <button class="botao botao--bloco" data-acao="adicionar-evento" type="button">
+                Adicionar evento
+              </button>
+            </div>`
+          : ''
+      }
+    </div>
 
     <div class="cartao">
       <div class="cartao__titulo">
@@ -281,6 +323,59 @@ export function montar(raiz, { app, eu }) {
     } catch (erro) {
       app.erro(erro);
     }
+  });
+
+  raiz.querySelector('[data-acao="adicionar-evento"]')?.addEventListener('click', async () => {
+    const nome = raiz.querySelector('#novoEventoNome').value.trim();
+    const diaSemana = Number(raiz.querySelector('#novoEventoDia').value);
+    const horaCulto = raiz.querySelector('#novoEventoHora').value;
+    const horaAbertura = raiz.querySelector('#novoEventoAbertura').value;
+
+    if (nome.length < 3) return app.aviso('Escreva o nome do evento.', 'erro');
+    if (!horaCulto || !horaAbertura) return app.aviso('Confira os horários.', 'erro');
+
+    const prefs = structuredClone(db.prefs());
+    const chave = uid('evento');
+    prefs.tipos[chave] = {
+      label: nome,
+      curto: nome,
+      apelido: nome,
+      diaSemana,
+      horaCulto,
+      horaAbertura,
+      ativo: true,
+      personalizado: true,
+    };
+
+    try {
+      await db.salvarPrefs(prefs);
+      app.aviso('Evento adicionado.', 'ok');
+      await app.recarregar();
+    } catch (erro) {
+      app.erro(erro);
+    }
+  });
+
+  raiz.querySelectorAll('[data-remover-tipo]').forEach((botao) => {
+    botao.onclick = async () => {
+      const chave = botao.dataset.removerTipo;
+      const ok = await app.confirmar(
+        `Remover "${db.tipo(chave).label}"? Isso não apaga turnos já publicados, mas o evento some da lista.`,
+        { textoOk: 'Remover' },
+      );
+      if (!ok) return;
+
+      const prefs = structuredClone(db.prefs());
+      delete prefs.tipos[chave];
+
+      try {
+        await db.salvarPrefs(prefs);
+        app.aviso('Evento removido.', 'ok');
+        await app.recarregar();
+      } catch (erro) {
+        app.erro(erro);
+      }
+    };
   });
 
   raiz.querySelector('[data-acao="atualizar"]').onclick = async () => {
