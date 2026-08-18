@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.5.1';
+export const VERSAO = '1.5.2';
 
 export const NOVIDADES = [
+  {
+    versao: '1.5.2',
+    data: '2026-08-18',
+    itens: [
+      'Corrigido: a barra de rolagem aparecia como uma faixa colada na borda direita da tela, parecendo conteúdo passando. Agora ela fica escondida (a rolagem continua funcionando normalmente).',
+    ],
+  },
   {
     versao: '1.5.1',
     data: '2026-08-18',

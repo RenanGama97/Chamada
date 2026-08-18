@@ -72,6 +72,15 @@
 
 * {
   box-sizing: border-box;
+  /* esconde a barra de rolagem nativa em qualquer área com rolagem própria
+     (página, modal, texto da escala) — no app instalado ela aparecia como
+     uma faixa cinza colada na borda direita, parecendo conteúdo "passando" */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 html,
@@ -79,6 +88,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  overflow-y: auto;
   /* impede pinça/duplo toque para dar zoom (além do viewport no index.html) */
   touch-action: pan-x pan-y;
 }
