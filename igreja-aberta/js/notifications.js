@@ -116,6 +116,19 @@ export const notificacoes = {
     return true;
   },
 
+  // Este aparelho já está registrado para receber push com o app fechado?
+  async estadoPush() {
+    if (!this.suportado) return 'nao-suportado';
+    if (db.modo !== 'nuvem' || !CONFIG.vapidPublicKey) return 'sem-servidor';
+    if (this.permissao !== 'granted') return 'sem-permissao';
+    try {
+      const registro = await navigator.serviceWorker.ready;
+      return (await registro.pushManager.getSubscription()) ? 'registrado' : 'nao-registrado';
+    } catch {
+      return 'nao-registrado';
+    }
+  },
+
   // Inscreve o aparelho no push do servidor (só com Supabase + VAPID).
   async ativarPush() {
     if (db.modo !== 'nuvem' || !CONFIG.vapidPublicKey) return false;

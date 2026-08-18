@@ -104,55 +104,82 @@ grupo** mostra "nuvem".
 > quiser fechar mais, o caminho é trocar as políticas do `schema.sql` por
 > Supabase Auth (login por e-mail com link mágico).
 
-### 3.2 Ligar o push de verdade
+### 3.2 Ligar o push de verdade (com o app fechado)
 
-Sem servidor, o lembrete aparece quando o irmão abre o app (e em segundo plano,
-quando o celular dele permite). Com o Supabase configurado, dá para enviar a
-notificação na hora marcada mesmo com o app fechado:
+Sem isso, o lembrete só aparece quando o irmão abre o app. Com isso, chega
+como notificação do celular na véspera e no dia do turno, com o app fechado.
 
-1. Gere o par de chaves VAPID:
+Dá para fazer tudo pelo navegador, sem instalar nada.
 
-   ```bash
-   npx web-push generate-vapid-keys
-   ```
+**1. Guardar as chaves.** No painel do Supabase: **Project Settings → Edge
+Functions → Secrets** (ou **Manage secrets**) e crie três:
 
-2. Coloque a chave **pública** em `js/config.js`:
+| Nome | Valor |
+| --- | --- |
+| `VAPID_PUBLIC_KEY` | a mesma chave que está em [`js/config.js`](js/config.js) |
+| `VAPID_PRIVATE_KEY` | a chave privada — **essa não vai para o código, só aqui** |
+| `VAPID_SUBJECT` | `mailto:` com um e-mail de contato da igreja |
 
-   ```js
-   vapidPublicKey: 'BEl62iUYgUiv...',
-   ```
+As chaves formam um par: o app usa a pública para se inscrever, o servidor usa
+a privada para assinar o envio. Para trocá-las depois, gere um par novo com
+`npx web-push generate-vapid-keys` e atualize os dois lugares.
 
-3. Publique a função (precisa da [CLI do Supabase](https://supabase.com/docs/guides/cli)):
+**2. Publicar a função.** Em **Edge Functions → Deploy a new function → Via
+Editor**, crie uma função chamada `lembretes` e cole nela os dois arquivos
+desta pasta:
 
-   ```bash
-   supabase link --project-ref SEU_PROJECT_REF
-   supabase secrets set \
-     VAPID_PUBLIC_KEY=... \
-     VAPID_PRIVATE_KEY=... \
-     VAPID_SUBJECT=mailto:voce@email.com
-   supabase functions deploy lembretes
-   ```
+- [`supabase/functions/lembretes/index.ts`](supabase/functions/lembretes/index.ts)
+- [`supabase/functions/lembretes/push.ts`](supabase/functions/lembretes/push.ts)
 
-4. Agende para rodar todo dia às 8h de Brasília (11h UTC). No SQL Editor:
+A função não usa biblioteca nenhuma — só o que o Deno já traz — então não há
+dependência para instalar.
 
-   ```sql
-   create extension if not exists pg_cron;
-   create extension if not exists pg_net;
+> Se o seu painel não tiver o editor, o caminho é pela
+> [CLI do Supabase](https://supabase.com/docs/guides/cli):
+> `supabase functions deploy lembretes`.
 
-   select cron.schedule(
-     'lembretes-igreja-aberta',
-     '0 11 * * *',
-     $$
-     select net.http_post(
-       url := 'https://SEU-PROJETO.supabase.co/functions/v1/lembretes',
-       headers := '{"Authorization": "Bearer SUA_SERVICE_ROLE_KEY"}'::jsonb
-     );
-     $$
-   );
-   ```
+**3. Testar.** Ainda na página da função, use **Invoke** (ou o botão de teste).
+A resposta é um resumo, algo como:
 
-A função avisa quem abre a igreja **hoje** e quem abre **amanhã**, e guarda o
-que já mandou para não repetir.
+```json
+{ "hoje": "2026-08-18", "amanha": "2026-08-19", "turnos": 2, "enviados": 1, "falhas": 0 }
+```
+
+- `turnos` conta os horários de hoje e amanhã na escala publicada
+- `enviados` conta as notificações que saíram
+- se der `enviados: 0` com `turnos: 0`, é só porque não há ninguém escalado
+  para hoje nem para amanhã — gere uma escala que cubra esses dias e teste de novo
+
+**4. Agendar para todo dia.** No **SQL Editor**, uma vez só (8h de Brasília =
+11h UTC):
+
+```sql
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+select cron.schedule(
+  'lembretes-igreja-aberta',
+  '0 11 * * *',
+  $$
+  select net.http_post(
+    url := 'https://SEU-PROJETO.supabase.co/functions/v1/lembretes',
+    headers := '{"Authorization": "Bearer SUA_SERVICE_ROLE_KEY"}'::jsonb
+  );
+  $$
+);
+```
+
+Troque o endereço e a `SUA_SERVICE_ROLE_KEY` pelos do seu projeto (Settings →
+API). Para conferir depois: `select * from cron.job;`.
+
+**5. No celular de cada irmão.** Em **Ajustes → Lembretes no celular**, tocar em
+**Ativar lembretes** e aceitar a permissão. É isso que registra o aparelho; sem
+esse passo, não há para onde mandar. No iPhone só funciona depois de adicionar
+o app à Tela de Início.
+
+**Como funciona por dentro:** a função avisa quem abre **hoje** e quem abre
+**amanhã**, guarda o que já mandou (tabela `lembretes_enviados`) para não
+repetir, e apaga sozinha as inscrições de aparelhos que desinstalaram o app.
 
 ## 4. Como o grupo usa no dia a dia
 
