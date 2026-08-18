@@ -19,8 +19,10 @@ export const CONFIG = {
     anonKey: 'sb_publishable_xlP7ONIeqrAocfDfT9Ntwg_VnzVP22T',
   },
 
-  // Notificação push (opcional, exige o Supabase configurado)
-  vapidPublicKey: '',
+  // Notificação push com o app fechado (exige o Supabase configurado e a
+  // função "lembretes" publicada — veja o README, seção 3.2).
+  // Esta é a chave PÚBLICA; a privada fica só nos segredos do Supabase.
+  vapidPublicKey: 'BG0jsewVcLE5axQyXs9B0WR-1fNar__K2jAHI-3cWsvUnckqWZn5WD3bkHxhM-jooQQ8rGcNWAT2WgYaS31DkE0',
 };
 
 // Horários padrão dos cultos. Podem ser alterados dentro do app (Ajustes),

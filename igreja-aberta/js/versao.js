@@ -9,9 +9,17 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.3.0';
+export const VERSAO = '1.4.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.4.0',
+    data: '2026-08-18',
+    itens: [
+      'O lembrete agora chega no celular mesmo com o app fechado, na véspera e no dia do seu turno.',
+      'Se você ainda não ativou os lembretes, entre em Ajustes e toque em "Ativar lembretes".',
+    ],
+  },
   {
     versao: '1.3.0',
     data: '2026-08-18',

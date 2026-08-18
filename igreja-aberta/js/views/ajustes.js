@@ -87,15 +87,7 @@ export function render({ app, eu }) {
              </p>`
           : ''
       }
-      ${
-        db.modo === 'local'
-          ? `<p class="mini" style="margin-top:8px">
-               No modo local o aviso aparece quando você abre o app (e em segundo
-               plano, se o seu celular permitir). Para receber o aviso mesmo com o
-               app fechado, ative a sincronização na nuvem — veja o README.
-             </p>`
-          : ''
-      }
+      <p class="mini" id="estadoPush" style="margin-top:8px"></p>
     </div>
 
     <div class="cartao">
@@ -235,6 +227,23 @@ export function montar(raiz, { app, eu }) {
     }
     app.desenhar();
   });
+
+  const linhaPush = raiz.querySelector('#estadoPush');
+  if (linhaPush) {
+    notificacoes.estadoPush().then((estado) => {
+      linhaPush.textContent = {
+        registrado:
+          '✅ Este aparelho está registrado: o aviso chega mesmo com o app fechado.',
+        'nao-registrado':
+          '⚠️ Este aparelho ainda não se registrou no servidor. Feche e abra o app; se continuar assim, desative e ative os lembretes de novo.',
+        'sem-permissao':
+          'Ative os lembretes acima para este aparelho receber avisos com o app fechado.',
+        'sem-servidor':
+          'Neste momento o aviso só aparece quando você abre o app.',
+        'nao-suportado': 'Este navegador não trabalha com notificações.',
+      }[estado] || '';
+    });
+  }
 
   raiz.querySelector('[data-acao="testar-notificacao"]')?.addEventListener('click', async () => {
     const ok = await notificacoes.testar();
