@@ -643,23 +643,24 @@ textarea:focus {
   overflow: auto;
 }
 
+/* Empilhado por padrão: os campos de data/hora (<input type="date"/"time">)
+   têm uma largura mínima própria do navegador que varia por aparelho, fonte
+   do sistema e configuração de acessibilidade — não dá pra confiar em nenhum
+   cálculo de "cabe em 2 colunas" para celular. Empilhado nunca estoura. */
 .grade-2 {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
-/* itens de grid têm largura mínima automática = conteúdo; sem isso, campos de
-   data/hora (que têm largura mínima própria do navegador) estouram a coluna */
 .grade-2 > * {
   min-width: 0;
 }
 
-/* <input type="date"> tem uma largura mínima imposta pelo navegador maior do
-   que cabe em duas colunas num celular estreito — nesse tamanho empilha */
-@media (max-width: 400px) {
+/* só em tela de tablet/computador para cima os dois campos ficam lado a lado */
+@media (min-width: 620px) {
   .grade-2 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 
