@@ -78,6 +78,9 @@ html,
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  /* impede pinça/duplo toque para dar zoom (além do viewport no index.html) */
+  touch-action: pan-x pan-y;
 }
 
 body {
@@ -88,6 +91,17 @@ body {
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   padding-bottom: calc(var(--alturaNav) + env(safe-area-inset-bottom));
+  width: 100%;
+}
+
+/* nenhum elemento pode forçar rolagem lateral da página */
+img,
+svg,
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
 }
 
 h1,
@@ -631,8 +645,22 @@ textarea:focus {
 
 .grade-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
+}
+
+/* itens de grid têm largura mínima automática = conteúdo; sem isso, campos de
+   data/hora (que têm largura mínima própria do navegador) estouram a coluna */
+.grade-2 > * {
+  min-width: 0;
+}
+
+/* <input type="date"> tem uma largura mínima imposta pelo navegador maior do
+   que cabe em duas colunas num celular estreito — nesse tamanho empilha */
+@media (max-width: 400px) {
+  .grade-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (min-width: 620px) {

@@ -9,9 +9,19 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.4.0';
+export const VERSAO = '1.5.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.5.0',
+    data: '2026-08-18',
+    itens: [
+      'Corrigido: telas que passavam da largura do celular (Não posso e Ajustes). Agora tudo cabe certinho na tela.',
+      'Não dá mais para dar zoom com dois dedos ou toque duplo no app.',
+      'Horários dos cultos: agora todo mundo pode ver, mas só o administrador consegue alterar.',
+      'Administrador agora pode cadastrar outros tipos de evento (Culto das Mulheres, Culto Phronesis, etc.), com nome, dia, horário de início e horário de chegada.',
+    ],
+  },
   {
     versao: '1.4.0',
     data: '2026-08-18',
