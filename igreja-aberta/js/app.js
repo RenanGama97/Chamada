@@ -234,8 +234,13 @@ const atualizacao = {
   async preparar() {
     if (!('serviceWorker' in navigator)) return;
 
+    // Na primeira visita o service worker assume o controle da página pela
+    // primeira vez. Isso não é uma atualização — recarregar aí faria o app
+    // abrir duas vezes seguidas para quem está entrando agora.
+    const jaTinhaControlador = Boolean(navigator.serviceWorker.controller);
+
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (this.recarregando) return;
+      if (!jaTinhaControlador || this.recarregando) return;
       this.recarregando = true;
       location.reload();
     });
@@ -362,8 +367,8 @@ async function iniciar() {
 
   app.ir(location.hash.replace('#', '') || 'escala', { comHistorico: false });
 
-  // Deixa a marca aparecer por um instante, mesmo quando tudo carrega rápido.
-  const restante = Math.max(0, 1100 - (Date.now() - abertoEm));
+  // Dá tempo da marca surgir por inteiro, mesmo quando tudo carrega rápido.
+  const restante = Math.max(0, 2400 - (Date.now() - abertoEm));
   setTimeout(() => {
     esconderAbertura();
     mostrarNovidades();

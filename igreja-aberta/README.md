@@ -204,7 +204,11 @@ igreja-aberta/
 ├── sw.js                   service worker: offline, lembrete e push
 ├── css/app.css
 ├── fontes/                 Poppins (licença SIL OFL), a fonte da logo
-├── icons/                  ícones do celular + a logo (logo.svg, marca.svg)
+├── icons/                  arte da IECC e ícones do celular
+│   ├── logo-original.png   a arte como veio da igreja (fonte de tudo)
+│   ├── logo-iecc.png       a mesma arte, recortada e sem fundo (tela de abertura)
+│   ├── marca-iecc.png      só a janela em arco (base dos ícones)
+│   └── logo.svg/marca.svg  versão em vetor, usada nas telas internas
 ├── js/
 │   ├── config.js           👈 onde você configura Supabase e VAPID
 │   ├── versao.js           👈 número da versão e lista de novidades

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Igreja Aberta — Escala</title>
     <meta name="description" content="Escala automática dos irmãos que abrem a igreja." />
-    <meta name="theme-color" content="#c4b09b" />
+    <meta name="theme-color" content="#bfae9a" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/icon-192.png" />
     <link rel="apple-touch-icon" href="icons/icon-180.png" />
@@ -15,63 +15,18 @@
     <link rel="stylesheet" href="css/app.css" />
   </head>
   <body>
-    <!-- Tela de abertura. O SVG vai embutido para aparecer na hora, sem esperar
-         nenhum arquivo extra carregar. -->
+    <!-- Tela de abertura: a arte original da IECC, que vai surgindo. -->
     <div id="abertura" class="abertura">
       <div class="abertura__marca">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 306" role="img" aria-label="Igreja Aberta — IECC">
-          <title>Igreja Aberta — IECC</title>
-          <defs>
-            <path id="arcoTexto" d="M 26 140 A 94 94 0 0 1 214 140" fill="none" />
-          </defs>
-          <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-            <!-- janela em arco, apoiada no livro -->
-            <path d="M56 238 V150 A64 64 0 0 1 184 150 V238" />
-        
-            <!-- sol -->
-            <circle cx="120" cy="140" r="21" />
-            <g>
-              <path d="M92 136 L74 133" />
-              <path d="M95 128 L78 121" />
-              <path d="M99 122 L85 110" />
-              <path d="M105 116 L95 101" />
-              <path d="M112 113 L107 96" />
-              <path d="M120 112 L120 94" />
-              <path d="M128 113 L133 96" />
-              <path d="M135 117 L145 101" />
-              <path d="M141 122 L155 110" />
-              <path d="M146 129 L162 121" />
-              <path d="M148 136 L166 134" />
-            </g>
-        
-            <!-- cruz sobre a janela -->
-            <path d="M120 88 V240" />
-            <path d="M62 151 H178" />
-        
-            <!-- colinas -->
-            <path d="M56 230 C 72 184 106 180 134 234" />
-            <path d="M56 238 C 84 200 122 206 168 238" />
-        
-            <!-- planta de três folhas -->
-            <path d="M152 238 C 145 214 146 186 152 166 C 158 186 159 214 152 238" />
-            <path d="M147 238 C 137 222 133 200 135 184 C 145 197 149 218 149 238" />
-            <path d="M157 238 C 167 222 171 200 169 184 C 159 197 155 218 155 238" />
-        
-            <!-- livro aberto na base -->
-            <path d="M52 238 C 78 228 104 230 120 240 C 136 230 162 228 188 238" />
-            <path d="M52 245 C 78 235 104 237 120 247 C 136 237 162 235 188 245" />
-            <path d="M52 252 C 78 242 104 244 120 254 C 136 244 162 242 188 252" />
-            <path d="M52 238 V252" />
-            <path d="M188 238 V252" />
-            <path d="M120 240 V254" />
-          </g>
-          <g fill="currentColor" text-anchor="middle" font-family="Poppins, 'Century Gothic', 'Avenir Next', sans-serif">
-            <text font-size="26" font-weight="600" letter-spacing="0.5">
-              <textPath href="#arcoTexto" startOffset="50%">Igreja Aberta</textPath>
-            </text>
-            <text x="120" y="292" font-size="17" font-weight="300" letter-spacing="8">IECC</text>
-          </g>
-        </svg>
+        <img
+          class="abertura__logo"
+          src="icons/logo-iecc.png"
+          alt="Igreja Aberta — IECC"
+          width="376"
+          height="376"
+          fetchpriority="high"
+        />
+        <p class="abertura__nome">Igreja Aberta</p>
       </div>
     </div>
 
