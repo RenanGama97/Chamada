@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.5.2';
+export const VERSAO = '1.5.3';
 
 export const NOVIDADES = [
+  {
+    versao: '1.5.3',
+    data: '2026-08-19',
+    itens: [
+      'Corrigido de verdade: as caixinhas de horário (Horários dos cultos) passavam um pouco da borda do cartão em alguns celulares. Agora ficam sempre dentro do cartão.',
+    ],
+  },
   {
     versao: '1.5.2',
     data: '2026-08-18',
