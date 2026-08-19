@@ -205,6 +205,15 @@ p {
   margin: 0 auto;
 }
 
+/* em tela de celular estreita, o campo de hora/data tem uma largura mínima
+   própria do sistema — encolhe as bordas ao redor pra sobrar mais espaço de
+   verdade pra ele, em vez de só esconder o estouro */
+@media (max-width: 400px) {
+  .view {
+    padding: 10px;
+  }
+}
+
 .cartao {
   background: var(--cartao);
   border: 1px solid var(--borda);
@@ -215,6 +224,12 @@ p {
      alguns celulares o controle nativo de hora/data (relógio do sistema)
      pinta um pouco além da caixa que o CSS calculou pra ele */
   overflow: hidden;
+}
+
+@media (max-width: 400px) {
+  .cartao {
+    padding: 12px 8px;
+  }
 }
 
 .cartao--destaque {
@@ -362,6 +377,14 @@ textarea {
   color: var(--texto);
   font-size: 16px;
   font-family: inherit;
+}
+
+@media (max-width: 400px) {
+  input[type='date'],
+  input[type='time'] {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 input:focus,

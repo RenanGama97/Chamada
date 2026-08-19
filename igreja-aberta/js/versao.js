@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.5.3';
+export const VERSAO = '1.5.4';
 
 export const NOVIDADES = [
+  {
+    versao: '1.5.4',
+    data: '2026-08-19',
+    itens: [
+      'As caixinhas de horário ainda ficavam sem a borda direita em celulares mais estreitos (o campo de hora tem uma largura mínima do próprio sistema). Reduzimos as margens ao redor pra sobrar espaço de verdade pra ele.',
+    ],
+  },
   {
     versao: '1.5.3',
     data: '2026-08-19',
