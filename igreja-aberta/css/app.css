@@ -211,6 +211,10 @@ p {
   border-radius: var(--raio);
   box-shadow: var(--sombra);
   padding: 14px;
+  /* trava qualquer coisa que tente desenhar além da borda do cartão — em
+     alguns celulares o controle nativo de hora/data (relógio do sistema)
+     pinta um pouco além da caixa que o CSS calculou pra ele */
+  overflow: hidden;
 }
 
 .cartao--destaque {
