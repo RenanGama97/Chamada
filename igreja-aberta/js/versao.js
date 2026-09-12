@@ -9,9 +9,17 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.6.0';
+export const VERSAO = '1.7.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.7.0',
+    data: '2026-09-12',
+    itens: [
+      'Novo: na tela "Gerar escala" agora dá pra escolher "Gerar a partir da data..." — útil quando o mês está "quebrado" (uma parte já resolvida de outro jeito). Os dias antes da data escolhida não são mexidos.',
+      'Corrigido: o sorteio da escala estava sempre repetindo a mesma pessoa no mesmo dia da semana, mês após mês. Agora o empate entre irmãos igualmente disponíveis é sorteado de verdade a cada geração.',
+    ],
+  },
   {
     versao: '1.6.0',
     data: '2026-09-12',
