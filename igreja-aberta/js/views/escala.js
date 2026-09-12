@@ -81,6 +81,13 @@ export function render({ app, eu }) {
         <input type="checkbox" id="verPassados" ${mostrarPassados ? 'checked' : ''} />
         Mostrar dias que já passaram
       </label>
+      ${
+        app.ehAdmin
+          ? `<button class="botao botao--perigo botao--pequeno" data-acao="excluir-escala" type="button" style="margin-top:10px">
+               🗑️ Excluir esta escala
+             </button>`
+          : ''
+      }
     </div>
 
     ${
@@ -149,6 +156,22 @@ export function montar(raiz, { app, eu }) {
         aoSalvar: () => app.recarregar(),
       });
     };
+  });
+
+  raiz.querySelector('[data-acao="excluir-escala"]')?.addEventListener('click', async () => {
+    const ok = await app.confirmar(
+      `Excluir a escala de ${nomeMes(escala.periodo)}? Isso apaga todos os turnos desse mês e não pode ser desfeito.`,
+      { textoOk: 'Excluir', perigo: true },
+    );
+    if (!ok) return;
+
+    try {
+      await db.removerEscala(escala.id);
+      app.aviso('Escala excluída.', 'ok');
+      await app.recarregar();
+    } catch (erro) {
+      app.erro(erro);
+    }
   });
 
   raiz.querySelector('[data-acao="ver-meu"]')?.addEventListener('click', () => {
