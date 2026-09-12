@@ -6,6 +6,8 @@
 //   3. Quem tem menos escalas até agora entra primeiro (divisão justa).
 //   4. Se possível, evita escalar a mesma pessoa duas vezes na mesma semana.
 //   5. Só entra em cultos que a pessoa marcou que participa.
+//   6. Empate entre igualmente elegíveis é sorteado (senão a mesma pessoa
+//      sempre "ganha" o mesmo dia da semana, mês após mês).
 
 import { datasDoDiaSemana, diffDias, uid } from './util.js';
 
@@ -83,8 +85,6 @@ export function gerarEscala({
 
   const itens = [];
   const avisos = [];
-  // Desempate estável, mas que muda a cada geração para não viciar a ordem.
-  const sorteio = new Map(disponiveis.map((m) => [m.id, Math.random()]));
 
   for (const evento of eventos) {
     const chaveEvento = `${evento.data}|${evento.tipo}`;
@@ -104,14 +104,16 @@ export function gerarEscala({
 
       if (!candidatos.length) break;
 
+      // Embaralha antes de ordenar por carga: o sort é estável, então entre
+      // pessoas empatadas (mesmo tanto de turnos, mesma penalidade da
+      // semana) quem entra primeiro é sorteado a cada evento — senão a
+      // pessoa que "ganhava" o empate uma vez acaba ganhando pra sempre o
+      // mesmo dia da semana, mês após mês.
+      candidatos.sort(() => Math.random() - 0.5);
       candidatos.sort((a, b) => {
         const pesoA = cargas.get(a.id) + penalidadeSemana(a.id, evento.data);
         const pesoB = cargas.get(b.id) + penalidadeSemana(b.id, evento.data);
-        if (pesoA !== pesoB) return pesoA - pesoB;
-        const ultA = ultimaData.get(a.id) || '';
-        const ultB = ultimaData.get(b.id) || '';
-        if (ultA !== ultB) return ultA.localeCompare(ultB); // quem faz mais tempo primeiro
-        return sorteio.get(a.id) - sorteio.get(b.id);
+        return pesoA - pesoB;
       });
 
       const escolhido = candidatos[0];

@@ -19,6 +19,7 @@ export const titulo = 'Gerar escala';
 
 let periodo = proximoPeriodo(periodoAtual());
 let previa = null; // { itens, avisos, resumo }
+let inicioPersonalizado = ''; // data (AAAA-MM-DD) pra gerar só a partir dela, em mês "quebrado"
 
 export function render({ app }) {
   const membros = db.membrosAtivos();
@@ -55,6 +56,21 @@ export function render({ app }) {
       </div>
 
       <div class="campo">
+        <label for="gInicio">Gerar a partir da data (opcional)</label>
+        <input
+          type="date"
+          id="gInicio"
+          min="${primeiroDiaDoPeriodo(periodo)}"
+          max="${ultimoDiaDoPeriodo(periodo)}"
+          value="${inicioPersonalizado}"
+        />
+        <p class="fraco" style="margin:4px 0 0">
+          Deixe em branco pra gerar o mês inteiro. Use isso quando o mês está "quebrado"
+          (uma parte já resolvida de outro jeito) — os dias antes dessa data não são mexidos.
+        </p>
+      </div>
+
+      <div class="campo">
         <label for="gPessoas">Irmãos por culto</label>
         <input type="number" id="gPessoas" min="1" max="5" value="${prefs.pessoasPorEvento || 1}" />
       </div>
@@ -88,7 +104,12 @@ export function render({ app }) {
       existente && !previa
         ? `<div class="cartao" style="background:var(--ambar-fundo);border-color:var(--ambar)">
              <strong>Atenção:</strong> já existe uma escala de ${escapar(nomeMes(periodo))}
-             (${escapar(existente.status)}). Gerar de novo substitui a atual.
+             (${escapar(existente.status)}).
+             ${
+               inicioPersonalizado
+                 ? `Só os dias a partir de ${escapar(formatarData(inicioPersonalizado))} serão substituídos; o resto do mês continua como está.`
+                 : 'Gerar de novo substitui o mês inteiro.'
+             }
            </div>`
         : ''
     }
@@ -164,6 +185,15 @@ export function montar(raiz, { app }) {
     seletor.onchange = () => {
       periodo = seletor.value;
       previa = null;
+      inicioPersonalizado = '';
+      app.desenhar();
+    };
+  }
+
+  const campoInicio = raiz.querySelector('#gInicio');
+  if (campoInicio) {
+    campoInicio.onchange = () => {
+      inicioPersonalizado = campoInicio.value;
       app.desenhar();
     };
   }
@@ -175,6 +205,15 @@ export function montar(raiz, { app }) {
     );
     const espacar = raiz.querySelector('#gEspacar')?.checked ?? true;
     const manter = raiz.querySelector('#gManter')?.checked ?? false;
+
+    const primeiroDia = primeiroDiaDoPeriodo(periodo);
+    const ultimoDia = ultimoDiaDoPeriodo(periodo);
+    const inicioDigitado = raiz.querySelector('#gInicio')?.value || '';
+    // trava dentro do mês escolhido, mesmo que o navegador deixe digitar fora
+    const inicio =
+      inicioDigitado && inicioDigitado >= primeiroDia && inicioDigitado <= ultimoDia
+        ? inicioDigitado
+        : primeiroDia;
 
     const existente = db.escalaDoPeriodo(periodo);
     const fixos = new Map();
@@ -188,13 +227,24 @@ export function montar(raiz, { app }) {
       membros: db.membrosAtivos(),
       indisponibilidades: db.indisponibilidades(),
       escalasAnteriores: db.escalas().filter((e) => e.periodo !== periodo),
-      inicio: primeiroDiaDoPeriodo(periodo),
-      fim: ultimoDiaDoPeriodo(periodo),
+      inicio,
+      fim: ultimoDia,
       tipos: db.tiposAtivos(),
       pessoasPorEvento: pessoas,
       evitarRepetirNaSemana: espacar,
       fixos,
     });
+
+    // Mês "quebrado": preserva os dias antes do início escolhido que já
+    // estavam salvos, em vez de gerar o mês inteiro do zero.
+    if (inicio > primeiroDia && existente) {
+      const diasAnteriores = existente.itens.filter((i) => i.data < inicio);
+      previa = {
+        ...previa,
+        itens: [...diasAnteriores, ...previa.itens],
+        resumo: resumoDeCargas([...diasAnteriores, ...previa.itens], db.membros()),
+      };
+    }
 
     app.aviso('Escala gerada. Confira a prévia abaixo.', 'ok');
     app.desenhar();
