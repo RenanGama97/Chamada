@@ -4,7 +4,7 @@ import { CONFIG } from './config.js';
 import { db } from './store.js';
 import { notificacoes } from './notifications.js';
 import { escapar, iniciais } from './util.js';
-import { NOVIDADES, VERSAO, comparaVersao, novidadesDaVersao } from './versao.js';
+import { VERSAO, novidadesDaVersao } from './versao.js';
 
 import * as telaLogin from './views/login.js';
 import * as telaEscala from './views/escala.js';
@@ -314,23 +314,18 @@ function mostrarNovidades() {
   // Primeira vez no aparelho: não enche o irmão de novidades sem contexto.
   if (!vista || vista === VERSAO) return;
 
-  const novas = NOVIDADES.filter((n) => comparaVersao(n.versao, vista) > 0);
-  const lista = novas.length ? novas : [novidadesDaVersao()].filter(Boolean);
-  if (!lista.length) return;
+  // Mostra só a versão mais recente, mesmo que o irmão tenha pulado várias
+  // atualizações — ninguém quer ler o histórico inteiro de uma vez.
+  const novidades = novidadesDaVersao();
+  if (!novidades) return;
 
   app.abrirModal({
     titulo: '✨ O que há de novo',
     html: `
       <p class="versao-etiqueta">versão ${escapar(VERSAO)}</p>
-      ${lista
-        .map(
-          (n) => `
-            <p class="mini" style="margin:12px 0 6px">Versão ${escapar(n.versao)}</p>
-            <ul class="novidades">
-              ${n.itens.map((i) => `<li>${escapar(i)}</li>`).join('')}
-            </ul>`,
-        )
-        .join('')}
+      <ul class="novidades">
+        ${novidades.itens.map((i) => `<li>${escapar(i)}</li>`).join('')}
+      </ul>
       <button class="botao botao--principal botao--bloco" data-acao="ok" type="button" style="margin-top:16px">
         Entendi
       </button>

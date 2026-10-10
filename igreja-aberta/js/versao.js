@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.8.0';
+export const VERSAO = '1.8.1';
 
 export const NOVIDADES = [
+  {
+    versao: '1.8.1',
+    data: '2026-10-10',
+    itens: [
+      'Corrigido: o aviso "O que há de novo" que aparece depois de atualizar estava empilhando o histórico inteiro quando o irmão ficava várias versões pra trás. Agora mostra só as novidades da versão mais recente.',
+    ],
+  },
   {
     versao: '1.8.0',
     data: '2026-10-10',
