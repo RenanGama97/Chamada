@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.9.1';
+export const VERSAO = '1.10.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.10.0',
+    data: '2026-10-10',
+    itens: [
+      'Novo: na tela Escala, agora dá pra escolher "De" e "Até" pra enviar no WhatsApp ou copiar vários meses de uma vez — útil quando você gera a escala de vários meses seguidos (ex.: abril até agosto) e quer mandar tudo junto, em vez de mês por mês.',
+    ],
+  },
   {
     versao: '1.9.1',
     data: '2026-10-10',
