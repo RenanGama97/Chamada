@@ -28,9 +28,45 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: igreja-aberta
       - id: deploy
         uses: actions/deploy-pages@v4
+      - name: Avisar no celular que saiu versão nova
+        if: success()
+        run: |
+          cd igreja-aberta
+          VERSAO_ATUAL=$(grep -oP "(?<=export const VERSAO = ')[^']+" js/versao.js || true)
+          VERSAO_ANTERIOR=$(git show HEAD~1:igreja-aberta/js/versao.js 2>/dev/null | grep -oP "(?<=export const VERSAO = ')[^']+" || true)
+
+          if [ -z "$VERSAO_ATUAL" ] || [ "$VERSAO_ATUAL" = "$VERSAO_ANTERIOR" ]; then
+            echo "Versão não mudou neste deploy (ou não achei o número) — não avisa."
+            exit 0
+          fi
+
+          SUPABASE_URL=$(grep -oP "(?<=url: ')[^']+" js/config.js | head -1 || true)
+          ANON_KEY=$(grep -oP "(?<=anonKey: ')[^']+" js/config.js | head -1 || true)
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$ANON_KEY" ]; then
+            echo "Supabase não configurado (js/config.js) — pulando aviso de atualização."
+            exit 0
+          fi
+
+          echo "Avisando que a versão $VERSAO_ATUAL saiu..."
+          CODIGO=$(curl -sS -o /tmp/resposta.json -w "%{http_code}" \
+            -X POST "${SUPABASE_URL}/functions/v1/notificar-atualizacao" \
+            -H "Authorization: Bearer ${ANON_KEY}" \
+            -H "apikey: ${ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"versao\": \"${VERSAO_ATUAL}\"}") || true
+
+          cat /tmp/resposta.json 2>/dev/null || true
+          echo ""
+
+          if [ "$CODIGO" != "200" ]; then
+            echo "⚠️ Não consegui avisar (HTTP $CODIGO). A função 'notificar-atualizacao' pode ainda não estar publicada no Supabase — veja o README, seção 3.3. Isso não é um erro fatal do deploy."
+          fi

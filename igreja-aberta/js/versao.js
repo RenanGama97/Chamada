@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.8.1';
+export const VERSAO = '1.9.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.9.0',
+    data: '2026-10-10',
+    itens: [
+      'Novo: quando sai uma atualização, quem já ativou os lembretes recebe um aviso no celular ("🔔 Olá, irmão! Tem atualização nova...") para abrir o app e já pegar a versão mais nova.',
+    ],
+  },
   {
     versao: '1.8.1',
     data: '2026-10-10',

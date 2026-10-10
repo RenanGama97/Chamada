@@ -181,6 +181,39 @@ o app à Tela de Início.
 **amanhã**, guarda o que já mandou (tabela `lembretes_enviados`) para não
 repetir, e apaga sozinha as inscrições de aparelhos que desinstalaram o app.
 
+### 3.3 Avisar todo mundo quando sai uma versão nova (opcional)
+
+Com isso, sempre que você publica uma atualização, todo irmão que já ativou os
+lembretes (passo 5 acima) recebe no celular algo como "🔔 Olá, irmão! Tem
+atualização nova no app Igreja Aberta. Abra o aplicativo!" — mesmo com o app
+fechado. É o **GitHub Actions quem chama sozinho**, a cada publicação que muda
+o número da versão (`js/versao.js`); não precisa agendar nada no Supabase.
+
+**1. Publicar a função.** Mesmo caminho do passo 3.2: **Edge Functions → Deploy
+a new function → Via Editor**, crie uma função chamada `notificar-atualizacao`
+e cole nela os dois arquivos desta pasta:
+
+- [`supabase/functions/notificar-atualizacao/index.ts`](supabase/functions/notificar-atualizacao/index.ts)
+- [`supabase/functions/notificar-atualizacao/push.ts`](supabase/functions/notificar-atualizacao/push.ts)
+
+Ou pela CLI: `supabase functions deploy notificar-atualizacao`.
+
+Ela usa os **mesmos segredos** `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/
+`VAPID_SUBJECT` do passo 3.2 — se os lembretes já funcionam, não precisa
+configurar nada a mais.
+
+**2. Pronto.** Não precisa criar nenhum segredo novo no GitHub: o workflow lê
+a URL e a chave pública do Supabase direto de `js/config.js` (a mesma chave
+que já é pública no app). Na próxima vez que você mudar o número da `VERSAO`
+em `js/versao.js` e isso for publicado, o aviso sai sozinho.
+
+Se a função ainda não estiver publicada, o deploy continua normalmente — só
+aparece um aviso nos logs do GitHub Actions dizendo que não conseguiu avisar,
+sem travar nada.
+
+Pra testar sem esperar a próxima versão: no Supabase, **Edge Functions →
+notificar-atualizacao → Invoke**, com corpo `{"versao": "teste"}`.
+
 ## 4. Como o grupo usa no dia a dia
 
 **Administrador (você)**
@@ -249,7 +282,9 @@ igreja-aberta/
 │   └── views/              uma tela por arquivo
 └── supabase/
     ├── schema.sql          tabelas do banco
-    └── functions/lembretes/index.ts   envio do push
+    └── functions/
+        ├── lembretes/index.ts              lembrete do dia do turno
+        └── notificar-atualizacao/index.ts  avisa quando sai versão nova
 ```
 
 ## 8. Ideias para as próximas versões
