@@ -7,9 +7,9 @@ import { DIAS_SEMANA, formatarData, nomeMes, paraData } from './util.js';
 
 const SIGLAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
-export function textoDaEscala(escala, { comAvisos = true } = {}) {
-  const titulo = `*ESCALA — ${CONFIG.nomeGrupo.toUpperCase()}*`;
-  const linhas = [titulo, `🗓️ ${nomeMes(escala.periodo).toUpperCase()}`, ''];
+export function textoDaEscala(escala, { comAvisos = true, titulo } = {}) {
+  const tituloLinha = `*ESCALA — ${CONFIG.nomeGrupo.toUpperCase()}*`;
+  const linhas = [tituloLinha, `🗓️ ${(titulo || nomeMes(escala.periodo)).toUpperCase()}`, ''];
 
   const porData = new Map();
   for (const item of [...escala.itens].sort((a, b) => a.data.localeCompare(b.data))) {

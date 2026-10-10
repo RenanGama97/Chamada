@@ -9,9 +9,17 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.7.0';
+export const VERSAO = '1.8.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.8.0',
+    data: '2026-10-10',
+    itens: [
+      'Novo: "Gerar escala" agora usa um período livre (De / Até) em vez de ficar preso ao mês — dá pra gerar, por exemplo, de 15/10 até 30/11. Ajuda a distribuir os turnos de forma mais justa quando o mês sozinho é curto demais.',
+      'O que já estava salvo fora do período escolhido continua intacto — só o que está entre "De" e "Até" é gerado/substituído.',
+    ],
+  },
   {
     versao: '1.7.0',
     data: '2026-09-12',
