@@ -1,4 +1,4 @@
-// Tela do administrador: gerar a escala do mês com um toque.
+// Tela do administrador: gerar a escala por um período (pode passar de um mês).
 
 import { db } from '../store.js';
 import { gerarEscala, resumoDeCargas } from '../scheduler.js';
@@ -8,6 +8,7 @@ import {
   formatarData,
   nomeMes,
   periodoAtual,
+  periodosEntre,
   primeiroDiaDoPeriodo,
   proximoPeriodo,
   uid,
@@ -17,15 +18,20 @@ import { renderizarDias } from './comum.js';
 
 export const titulo = 'Gerar escala';
 
-let periodo = proximoPeriodo(periodoAtual());
+const proximo = proximoPeriodo(periodoAtual());
+let inicio = primeiroDiaDoPeriodo(proximo);
+let fim = ultimoDiaDoPeriodo(proximo);
 let previa = null; // { itens, avisos, resumo }
-let inicioPersonalizado = ''; // data (AAAA-MM-DD) pra gerar só a partir dela, em mês "quebrado"
 
 export function render({ app }) {
   const membros = db.membrosAtivos();
   const prefs = db.prefs();
-  const existente = db.escalaDoPeriodo(periodo);
-  const opcoesPeriodo = [0, 1, 2, 3].map((i) => proximoPeriodo(periodoAtual(), i));
+  const periodoValido = inicio && fim && fim >= inicio;
+  const existentes = periodoValido
+    ? periodosEntre(inicio, fim)
+        .map((p) => db.escalaDoPeriodo(p))
+        .filter(Boolean)
+    : [];
 
   if (membros.length === 0) {
     return `
@@ -41,34 +47,26 @@ export function render({ app }) {
 
   return `
     <div class="cartao">
-      <div class="campo">
-        <label for="gPeriodo">Mês da escala</label>
-        <select id="gPeriodo">
-          ${opcoesPeriodo
-            .map(
-              (p) =>
-                `<option value="${p}" ${p === periodo ? 'selected' : ''}>
-                   ${escapar(nomeMes(p))}${db.escalaDoPeriodo(p) ? ' — já existe' : ''}
-                 </option>`,
-            )
-            .join('')}
-        </select>
+      <div class="grade-2">
+        <div class="campo">
+          <label for="gInicio">De</label>
+          <input type="date" id="gInicio" value="${inicio}" />
+        </div>
+        <div class="campo">
+          <label for="gFim">Até</label>
+          <input type="date" id="gFim" value="${fim}" />
+        </div>
       </div>
+      <p class="fraco" style="margin:0 0 12px">
+        Pode passar de um mês (ex.: 15/10 até 30/11) — útil pra distribuir os turnos
+        num período maior, em vez de sempre fechar no fim do mês.
+      </p>
 
-      <div class="campo">
-        <label for="gInicio">Gerar a partir da data (opcional)</label>
-        <input
-          type="date"
-          id="gInicio"
-          min="${primeiroDiaDoPeriodo(periodo)}"
-          max="${ultimoDiaDoPeriodo(periodo)}"
-          value="${inicioPersonalizado}"
-        />
-        <p class="fraco" style="margin:4px 0 0">
-          Deixe em branco pra gerar o mês inteiro. Use isso quando o mês está "quebrado"
-          (uma parte já resolvida de outro jeito) — os dias antes dessa data não são mexidos.
-        </p>
-      </div>
+      ${
+        !periodoValido
+          ? `<p class="mini" style="color:var(--vermelho)">"Até" precisa ser igual ou depois de "De".</p>`
+          : ''
+      }
 
       <div class="campo">
         <label for="gPessoas">Irmãos por culto</label>
@@ -81,16 +79,22 @@ export function render({ app }) {
       </label>
 
       ${
-        existente
+        existentes.length
           ? `<label class="escolha">
                <input type="checkbox" id="gManter" checked />
-               Manter os turnos que já estão definidos em ${escapar(nomeMes(periodo))}
+               Manter os turnos que já estão definidos nesse período
              </label>`
           : ''
       }
 
-      <button class="botao botao--principal botao--bloco" data-acao="gerar" type="button" style="margin-top:8px">
-        ✨ Gerar escala de ${escapar(nomeMes(periodo))}
+      <button
+        class="botao botao--principal botao--bloco"
+        data-acao="gerar"
+        type="button"
+        style="margin-top:8px"
+        ${periodoValido ? '' : 'disabled'}
+      >
+        ✨ Gerar escala de ${escapar(formatarData(inicio))} até ${escapar(formatarData(fim))}
       </button>
 
       <p class="mini" style="margin-top:10px">
@@ -101,15 +105,11 @@ export function render({ app }) {
     </div>
 
     ${
-      existente && !previa
+      existentes.length && !previa
         ? `<div class="cartao" style="background:var(--ambar-fundo);border-color:var(--ambar)">
-             <strong>Atenção:</strong> já existe uma escala de ${escapar(nomeMes(periodo))}
-             (${escapar(existente.status)}).
-             ${
-               inicioPersonalizado
-                 ? `Só os dias a partir de ${escapar(formatarData(inicioPersonalizado))} serão substituídos; o resto do mês continua como está.`
-                 : 'Gerar de novo substitui o mês inteiro.'
-             }
+             <strong>Atenção:</strong> já existe escala em: ${escapar(existentes.map((e) => nomeMes(e.periodo)).join(', '))}.
+             Só os turnos dentro de ${escapar(formatarData(inicio))}–${escapar(formatarData(fim))}
+             serão substituídos; fora desse período, nada muda.
            </div>`
         : ''
     }
@@ -123,7 +123,7 @@ function renderPrevia() {
   const maior = Math.max(1, ...previa.resumo.map((r) => r.total));
 
   return `
-    <h2 class="secao-titulo">Prévia — ${escapar(nomeMes(periodo))}</h2>
+    <h2 class="secao-titulo">Prévia — ${escapar(formatarData(inicio))} até ${escapar(formatarData(fim))}</h2>
 
     ${
       previa.avisos.length
@@ -180,25 +180,30 @@ export function montar(raiz, { app }) {
     botao.onclick = () => app.ir(botao.dataset.ir);
   });
 
-  const seletor = raiz.querySelector('#gPeriodo');
-  if (seletor) {
-    seletor.onchange = () => {
-      periodo = seletor.value;
+  const campoInicio = raiz.querySelector('#gInicio');
+  if (campoInicio) {
+    campoInicio.onchange = () => {
+      inicio = campoInicio.value;
       previa = null;
-      inicioPersonalizado = '';
       app.desenhar();
     };
   }
 
-  const campoInicio = raiz.querySelector('#gInicio');
-  if (campoInicio) {
-    campoInicio.onchange = () => {
-      inicioPersonalizado = campoInicio.value;
+  const campoFim = raiz.querySelector('#gFim');
+  if (campoFim) {
+    campoFim.onchange = () => {
+      fim = campoFim.value;
+      previa = null;
       app.desenhar();
     };
   }
 
   raiz.querySelector('[data-acao="gerar"]')?.addEventListener('click', () => {
+    if (!inicio || !fim || fim < inicio) {
+      app.aviso('Confira as datas: "Até" precisa ser igual ou depois de "De".', 'erro');
+      return;
+    }
+
     const pessoas = Math.max(
       1,
       Math.min(5, Number(raiz.querySelector('#gPessoas')?.value || 1)),
@@ -206,43 +211,42 @@ export function montar(raiz, { app }) {
     const espacar = raiz.querySelector('#gEspacar')?.checked ?? true;
     const manter = raiz.querySelector('#gManter')?.checked ?? false;
 
-    const primeiroDia = primeiroDiaDoPeriodo(periodo);
-    const ultimoDia = ultimoDiaDoPeriodo(periodo);
-    const inicioDigitado = raiz.querySelector('#gInicio')?.value || '';
-    // trava dentro do mês escolhido, mesmo que o navegador deixe digitar fora
-    const inicio =
-      inicioDigitado && inicioDigitado >= primeiroDia && inicioDigitado <= ultimoDia
-        ? inicioDigitado
-        : primeiroDia;
+    const existentes = periodosEntre(inicio, fim)
+      .map((p) => db.escalaDoPeriodo(p))
+      .filter(Boolean);
 
-    const existente = db.escalaDoPeriodo(periodo);
     const fixos = new Map();
-    if (manter && existente) {
-      for (const item of existente.itens) {
-        if (item.membroIds.length) fixos.set(`${item.data}|${item.tipo}`, item.membroIds);
+    if (manter) {
+      for (const e of existentes) {
+        for (const item of e.itens) {
+          if (item.membroIds.length) fixos.set(`${item.data}|${item.tipo}`, item.membroIds);
+        }
       }
     }
 
     previa = gerarEscala({
       membros: db.membrosAtivos(),
       indisponibilidades: db.indisponibilidades(),
-      escalasAnteriores: db.escalas().filter((e) => e.periodo !== periodo),
+      escalasAnteriores: db.escalas(),
       inicio,
-      fim: ultimoDia,
+      fim,
       tipos: db.tiposAtivos(),
       pessoasPorEvento: pessoas,
       evitarRepetirNaSemana: espacar,
       fixos,
     });
 
-    // Mês "quebrado": preserva os dias antes do início escolhido que já
-    // estavam salvos, em vez de gerar o mês inteiro do zero.
-    if (inicio > primeiroDia && existente) {
-      const diasAnteriores = existente.itens.filter((i) => i.data < inicio);
+    // Preserva os turnos que já estavam salvos fora do período escolhido
+    // (ex.: começo do mês, ou o mês seguinte depois do "até"), em vez de
+    // gerar os meses tocados inteiros do zero.
+    const preservados = existentes.flatMap((e) =>
+      e.itens.filter((i) => i.data < inicio || i.data > fim),
+    );
+    if (preservados.length) {
       previa = {
         ...previa,
-        itens: [...diasAnteriores, ...previa.itens],
-        resumo: resumoDeCargas([...diasAnteriores, ...previa.itens], db.membros()),
+        itens: [...preservados, ...previa.itens],
+        resumo: resumoDeCargas([...preservados, ...previa.itens], db.membros()),
       };
     }
 
@@ -262,34 +266,60 @@ export function montar(raiz, { app }) {
 async function salvar(app, status) {
   if (!previa) return;
 
-  const existente = db.escalaDoPeriodo(periodo);
-  if (existente && status === 'publicada') {
+  const periodosTocados = periodosEntre(inicio, fim);
+  const existentes = periodosTocados.map((p) => db.escalaDoPeriodo(p)).filter(Boolean);
+
+  if (existentes.length && status === 'publicada') {
+    const nomes = existentes.map((e) => nomeMes(e.periodo)).join(', ');
     const ok = await app.confirmar(
-      `Isso substitui a escala de ${nomeMes(periodo)} que já está salva. Continuar?`,
+      `Isso substitui os turnos já salvos dentro de ${formatarData(inicio)}–${formatarData(fim)}` +
+        ` (em: ${nomes}). Continuar?`,
       { textoOk: 'Substituir' },
     );
     if (!ok) return;
   }
 
-  const escala = {
-    id: existente?.id || uid('esc'),
-    periodo,
-    status,
-    itens: previa.itens,
-    criadoEm: existente?.criadoEm || new Date().toISOString(),
-    publicadoEm: status === 'publicada' ? new Date().toISOString() : null,
-  };
+  // Cada mês continua sendo guardado como uma escala separada — só agrupa
+  // os itens (preservados + recém-gerados) de volta por mês pra salvar.
+  const porPeriodo = new Map();
+  for (const item of previa.itens) {
+    const p = item.data.slice(0, 7);
+    if (!porPeriodo.has(p)) porPeriodo.set(p, []);
+    porPeriodo.get(p).push(item);
+  }
+
+  const agora = new Date().toISOString();
+  const escalas = [...porPeriodo.entries()].map(([p, itens]) => {
+    const existente = db.escalaDoPeriodo(p);
+    return {
+      id: existente?.id || uid('esc'),
+      periodo: p,
+      status,
+      itens,
+      criadoEm: existente?.criadoEm || agora,
+      publicadoEm: status === 'publicada' ? agora : null,
+    };
+  });
 
   try {
-    await db.salvarEscala(escala);
-    // Mantém o resumo coerente com o que foi salvo.
-    previa = { ...previa, resumo: resumoDeCargas(escala.itens, db.membros()) };
+    for (const escala of escalas) {
+      await db.salvarEscala(escala);
+    }
+    previa = { ...previa, resumo: resumoDeCargas(previa.itens, db.membros()) };
     await app.recarregar({ redesenhar: false });
 
     if (status === 'publicada') {
       previa = null;
       app.aviso('Escala publicada!', 'ok');
-      abrirWhatsApp(textoDaEscala(escala));
+      const itensDoPeriodo = escalas.flatMap((e) =>
+        e.itens.filter((i) => i.data >= inicio && i.data <= fim),
+      );
+      abrirWhatsApp(
+        textoDaEscala(
+          { itens: itensDoPeriodo },
+          { titulo: `${formatarData(inicio)} A ${formatarData(fim)}` },
+        ),
+      );
       app.ir('escala');
     } else {
       app.aviso('Rascunho salvo.', 'ok');

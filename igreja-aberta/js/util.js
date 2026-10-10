@@ -79,6 +79,19 @@ export function ultimoDiaDoPeriodo(periodo) {
   return paraISO(new Date(ano, mes, 0));
 }
 
+// Lista os períodos ("AAAA-MM") que um intervalo de datas toca, na ordem.
+// Ex.: periodosEntre('2026-10-15', '2026-11-30') -> ['2026-10', '2026-11'].
+export function periodosEntre(inicioISO, fimISO) {
+  const periodos = [];
+  let periodo = inicioISO.slice(0, 7);
+  const ultimo = fimISO.slice(0, 7);
+  while (periodo <= ultimo) {
+    periodos.push(periodo);
+    periodo = proximoPeriodo(periodo);
+  }
+  return periodos;
+}
+
 // Lista todas as datas de um intervalo que caem em um determinado dia da semana.
 export function datasDoDiaSemana(inicioISO, fimISO, diaSemana) {
   const datas = [];
