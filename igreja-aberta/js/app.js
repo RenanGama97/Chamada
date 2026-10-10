@@ -4,7 +4,6 @@ import { CONFIG } from './config.js';
 import { db } from './store.js';
 import { notificacoes } from './notifications.js';
 import { escapar, iniciais } from './util.js';
-import { VERSAO, novidadesDaVersao } from './versao.js';
 
 import * as telaLogin from './views/login.js';
 import * as telaEscala from './views/escala.js';
@@ -22,8 +21,6 @@ const TELAS = {
 };
 
 const SOMENTE_ADMIN = new Set(['irmaos', 'gerar']);
-
-const CHAVE_VERSAO_VISTA = 'igreja-aberta:versao-vista';
 
 const el = {
   abertura: document.getElementById('abertura'),
@@ -306,36 +303,6 @@ const atualizacao = {
 
 el.botaoAtualizar.addEventListener('click', () => atualizacao.aplicar());
 
-// Depois de atualizar, conta o que mudou.
-function mostrarNovidades() {
-  const vista = localStorage.getItem(CHAVE_VERSAO_VISTA);
-  localStorage.setItem(CHAVE_VERSAO_VISTA, VERSAO);
-
-  // Primeira vez no aparelho: não enche o irmão de novidades sem contexto.
-  if (!vista || vista === VERSAO) return;
-
-  // Mostra só a versão mais recente, mesmo que o irmão tenha pulado várias
-  // atualizações — ninguém quer ler o histórico inteiro de uma vez.
-  const novidades = novidadesDaVersao();
-  if (!novidades) return;
-
-  app.abrirModal({
-    titulo: '✨ O que há de novo',
-    html: `
-      <p class="versao-etiqueta">versão ${escapar(VERSAO)}</p>
-      <ul class="novidades">
-        ${novidades.itens.map((i) => `<li>${escapar(i)}</li>`).join('')}
-      </ul>
-      <button class="botao botao--principal botao--bloco" data-acao="ok" type="button" style="margin-top:16px">
-        Entendi
-      </button>
-    `,
-    montar: (raiz) => {
-      raiz.querySelector('[data-acao="ok"]').onclick = () => app.fecharModal();
-    },
-  });
-}
-
 /* ---------- inicialização ---------- */
 
 function esconderAbertura() {
@@ -364,10 +331,7 @@ async function iniciar() {
 
   // Dá tempo da marca surgir por inteiro, mesmo quando tudo carrega rápido.
   const restante = Math.max(0, 2400 - (Date.now() - abertoEm));
-  setTimeout(() => {
-    esconderAbertura();
-    mostrarNovidades();
-  }, restante);
+  setTimeout(esconderAbertura, restante);
 
   await atualizacao.preparar();
 
