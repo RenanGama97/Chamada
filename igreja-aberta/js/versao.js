@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.9.0';
+export const VERSAO = '1.9.1';
 
 export const NOVIDADES = [
+  {
+    versao: '1.9.1',
+    data: '2026-10-10',
+    itens: [
+      'Removido o aviso automático "O que há de novo" que aparecia sozinho ao abrir o app depois de uma atualização (agora quem avisa é a notificação no celular). O histórico de novidades continua em Ajustes, pra quem quiser conferir.',
+    ],
+  },
   {
     versao: '1.9.0',
     data: '2026-10-10',
