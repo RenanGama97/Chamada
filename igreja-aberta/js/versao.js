@@ -9,9 +9,16 @@
 // O passo 3 é o que faz os celulares perceberem que existe versão nova e
 // mostrarem o aviso "Atualizar".
 
-export const VERSAO = '1.10.0';
+export const VERSAO = '1.11.0';
 
 export const NOVIDADES = [
+  {
+    versao: '1.11.0',
+    data: '2026-10-13',
+    itens: [
+      'Corrigido: ao compartilhar a escala, nomes digitados em MAIÚSCULO (ou tudo minúsculo) agora aparecem arrumados, só com as iniciais maiúsculas — não importa como a pessoa cadastrou o próprio nome.',
+    ],
+  },
   {
     versao: '1.10.0',
     data: '2026-10-10',
