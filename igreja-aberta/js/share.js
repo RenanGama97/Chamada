@@ -3,7 +3,7 @@
 
 import { CONFIG } from './config.js';
 import { db } from './store.js';
-import { DIAS_SEMANA, formatarData, nomeMes, paraData } from './util.js';
+import { DIAS_SEMANA, formatarData, formatarNome, nomeMes, paraData } from './util.js';
 
 const SIGLAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
@@ -25,6 +25,7 @@ export function textoDaEscala(escala, { comAvisos = true, titulo } = {}) {
       const nomes = item.membroIds
         .map((id) => db.membro(id)?.nome)
         .filter(Boolean)
+        .map(formatarNome)
         .join(' e ');
       const chegada = tipo.horaAbertura ? ` (abrir ${tipo.horaAbertura})` : '';
       linhas.push(`• ${tipo.apelido || tipo.curto}${chegada}: ${nomes || '⚠️ A DEFINIR'}`);

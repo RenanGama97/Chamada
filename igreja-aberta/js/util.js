@@ -118,6 +118,26 @@ export function iniciais(nome = '') {
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
 
+// Deixa o nome com só as iniciais maiúsculas, não importa como a pessoa
+// digitou (TUDO MAIÚSCULO, tudo minúsculo, etc.) — usado ao compartilhar a
+// escala, para o texto ficar sempre arrumado mesmo com cadastros diferentes.
+const CONECTORES_NOME = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
+
+export function formatarNome(nome = '') {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .map((palavra, indice) => {
+      const minuscula = palavra.toLocaleLowerCase('pt-BR');
+      if (indice > 0 && CONECTORES_NOME.has(minuscula)) return minuscula;
+      return minuscula
+        .split('-')
+        .map((parte) => parte.charAt(0).toLocaleUpperCase('pt-BR') + parte.slice(1))
+        .join('-');
+    })
+    .join(' ');
+}
+
 // Guarda só os dígitos e monta o formato do WhatsApp (55 + DDD + número).
 export function normalizarTelefone(valor = '') {
   const digitos = valor.replace(/\D/g, '');
